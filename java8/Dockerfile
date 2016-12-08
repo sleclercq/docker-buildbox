@@ -1,4 +1,4 @@
-FROM debian:8.4
+FROM debian:8.6
 MAINTAINER Stephane Leclercq <leclercq@ekino.com>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -8,8 +8,7 @@ RUN echo "Starting ..." && \
     echo "deb-src http://httpredir.debian.org/debian jessie-updates main" >> /etc/apt/sources.list && \
     echo "deb-src http://security.debian.org/ jessie/updates main" >> /etc/apt/sources.list && \
     apt-get clean && apt-get -qq update && \
-    apt-get -qq -y install build-essential libssl-dev curl git subversion make mercurial \
-      libmcrypt-dev libreadline-dev openssh-client && \
+    apt-get -qq -y install build-essential curl git subversion make mercurial openssh-client && \
 
     echo "Done base install!" && \
 
@@ -19,14 +18,20 @@ RUN echo "Starting ..." && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
     apt-get -qq update && \
     echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    apt-get -y install oracle-java8-installer oracle-java8-set-default && \
+    apt-get -y install oracle-java8-installer oracle-java8-set-default maven && \
     echo "Done Java!" && \
+
+    echo "Starting AWS" && \
+    apt-get install -y python-pip groff-base && \
+    pip install -U awscli && \
+    echo "Done AWS!" && \
 
     echo "Cleaning files!" && \
     rm -rf /tmp/* && \
-    apt-get remove --purge -y dpkg-dev fakeroot file libx11-6 libx11-data manpages manpages-dev \
-      openssl patch x11-common xauth xz-utils zlib1g-dev && \
+    apt-get remove --purge -y dpkg-dev fakeroot file gcc-4.8-base icc-profiles-free manpages manpages-dev \
+      python-pip openssl patch xauth xz-utils zlib1g-dev && \
 
-    apt-get clean apt-get purge &&  rm -rf /var/lib/apt/lists/* && \
+    apt-get -y autoremove && \
+    apt-get clean && apt-get purge &&  rm -rf /var/lib/apt/lists/* && \
 
     echo "Done!"
